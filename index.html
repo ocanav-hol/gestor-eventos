@@ -6,6 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestor de Eventos 🎊</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=DM+Sans:wght@400;600;700&family=Dancing+Script:wght@700&family=Montserrat:wght@400;700&family=Lora:wght@400;700&family=Great+Vibes&display=swap" rel="stylesheet">
+  <!-- Firebase FIRST — before React and Babel -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <!-- React -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
@@ -2898,22 +2903,8 @@ function App(){
 
   const isAdmin = ADMIN_EMAILS.includes(fbUser?.email);
 
-  // Load Firebase SDK dynamically
-  useEffect(()=>{
-    if(window.firebase){ setFbReady(true); initFirebase(); return; }
-    const scripts=[
-      "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js",
-      "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js",
-      "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js",
-    ];
-    let loaded=0;
-    scripts.forEach(src=>{
-      const s=document.createElement("script");
-      s.src=src;
-      s.onload=()=>{ loaded++; if(loaded===scripts.length){ initFirebase(); setFbReady(true); } };
-      document.head.appendChild(s);
-    });
-  },[]);
+  // Firebase already loaded in <head>
+  useEffect(()=>{ initFirebase(); setFbReady(true); },[]);
 
   // Listen to auth state
   useEffect(()=>{
