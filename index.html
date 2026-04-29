@@ -6,18 +6,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestor de Eventos 🎊</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=DM+Sans:wght@400;600;700&family=Dancing+Script:wght@700&family=Montserrat:wght@400;700&family=Lora:wght@400;700&family=Great+Vibes&display=swap" rel="stylesheet">
-  <!-- Firebase FIRST — before React and Babel -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <!-- React -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-  <style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#0a0a0a;color:#fff;font-family:"DM Sans",sans-serif;}#root{min-height:100vh;}</style>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:#0a0a0a;color:#fff;font-family:"DM Sans",sans-serif;}
+    #root{min-height:100vh;}
+    #debug{position:fixed;bottom:0;left:0;right:0;background:#1a0000;color:#ff6666;font-size:11px;padding:8px;z-index:9999;display:none;}
+  </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#FFD700;font-size:32px;">🎊</div></div>
+  <div id="debug"></div>
+  <script>
+    window.onerror = function(msg, src, line, col, err) {
+      var d = document.getElementById("debug");
+      d.style.display = "block";
+      d.textContent = "Error: " + msg + " (line " + line + ")";
+    };
+  </script>
   <script type="text/babel" data-presets="react">
 const { useState, useEffect, useRef } = React;
 
@@ -2903,8 +2914,22 @@ function App(){
 
   const isAdmin = ADMIN_EMAILS.includes(fbUser?.email);
 
-  // Firebase already loaded in <head>
-  useEffect(()=>{ initFirebase(); setFbReady(true); },[]);
+  // Load Firebase SDK dynamically
+  useEffect(()=>{
+    if(window.firebase){ setFbReady(true); initFirebase(); return; }
+    const scripts=[
+      "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js",
+      "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js",
+      "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js",
+    ];
+    let loaded=0;
+    scripts.forEach(src=>{
+      const s=document.createElement("script");
+      s.src=src;
+      s.onload=()=>{ loaded++; if(loaded===scripts.length){ initFirebase(); setFbReady(true); } };
+      document.head.appendChild(s);
+    });
+  },[]);
 
   // Listen to auth state
   useEffect(()=>{
@@ -3204,7 +3229,8 @@ function App(){
 }
 
 // Wrap with error boundary
-const root = ReactDOM.createRoot(document.getElementById("root")); root.render(<ErrorBoundary><App/></ErrorBoundary>);
+const root = ReactDOM.createRoot(document.getElementById("root")); 
+root.render(<App/>);
 
   </script>
 </body>
